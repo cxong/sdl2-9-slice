@@ -8,7 +8,6 @@ int render(
 	int x, int y, int top, int bottom, int left, int right, int w, int h)
 {
 	SDL_Rect dst;
-	int res;
 	dst.x = x;
 	dst.y = y;
 	dst.w = w;
@@ -43,7 +42,7 @@ int main(int argc, char *argv[])
 	// Create display window
 	window = SDL_CreateWindow(
 		"SDL2 9 Slice", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		width, height, 0);
+		width, height, SDL_WINDOW_RESIZABLE);
 	if (window == NULL)
 	{
 		printf("Failed to create window: %s\n", SDL_GetError());
@@ -55,7 +54,6 @@ int main(int argc, char *argv[])
 		printf("Failed to create renderer: %s\n", SDL_GetError());
 		goto bail;
 	}
-	SDL_RenderSetLogicalSize(renderer, width, height);
 
 	// Convert to texture
 	t = SDL_CreateTextureFromSurface(renderer, s);
@@ -72,16 +70,7 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 
-	// Blit the texture to screen
-	if (render(renderer, s, t, 0, 0, 0, 0, 0, 0, width, height) != 0)
-	{
-		printf("Failed to blit surface: %s\n", SDL_GetError());
-		goto bail;
-	}
-
-	// Display
-	SDL_RenderPresent(renderer);
-
+	bool rendered = false;
 	// Wait for keypress to exit
 	bool quit = false;
 	while (!quit)
@@ -89,10 +78,41 @@ int main(int argc, char *argv[])
 		SDL_Event e;
 		while (SDL_PollEvent(&e))
 		{
-			if (e.type == SDL_KEYDOWN || e.type == SDL_QUIT)
+			switch (e.type)
 			{
-				quit = true;
+				case SDL_KEYDOWN:
+				case SDL_QUIT:	// fallthrough
+					quit = true;
+					break;
+				case SDL_WINDOWEVENT:
+					switch (e.window.event)
+					{
+						case SDL_WINDOWEVENT_SIZE_CHANGED:
+							rendered = false;
+							width = e.window.data1;
+							height = e.window.data2;
+							break;
+						default:
+							break;
+					}
+					break;
+				default:
+					break;
 			}
+		}
+		if (!rendered)
+		{
+			SDL_RenderSetLogicalSize(renderer, width, height);
+			// Blit the texture to screen
+			if (render(renderer, s, t, 0, 0, 0, 0, 0, 0, width, height) != 0)
+			{
+				printf("Failed to blit surface: %s\n", SDL_GetError());
+				goto bail;
+			}
+
+			// Display
+			SDL_RenderPresent(renderer);
+			rendered = true;
 		}
 		SDL_Delay(100);
 	}
