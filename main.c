@@ -3,16 +3,48 @@
 
 #include <SDL_image.h>
 
+#define IMG_FILE "ui.png"
+// 9 slice params
+#define TOP 24
+#define BOTTOM 5
+#define LEFT 17
+#define RIGHT 17
+
 int render(
 	SDL_Renderer *renderer, SDL_Surface *s, SDL_Texture *t,
 	int x, int y, int top, int bottom, int left, int right, int w, int h)
 {
+	const int srcX[] = {0, LEFT, s->w - RIGHT};
+	const int srcY[] = {0, TOP, s->h - BOTTOM};
+	const int srcW[] = {LEFT, s->w - RIGHT - LEFT, RIGHT};
+	const int srcH[] = {TOP, s->h - BOTTOM - TOP, BOTTOM};
+	const int dstX[] = {x, x + LEFT, w - RIGHT};
+	const int dstY[] = {y, y + TOP, h - BOTTOM};
+	const int dstW[] = {LEFT, w - RIGHT - LEFT, RIGHT};
+	const int dstH[] = {TOP, h - BOTTOM - TOP, BOTTOM};
+	SDL_Rect src;
 	SDL_Rect dst;
-	dst.x = x;
-	dst.y = y;
-	dst.w = w;
-	dst.h = h;
-	return SDL_RenderCopy(renderer, t, NULL, &dst);
+	int res;
+	for (int i = 0; i < 3; i++)
+	{
+		src.x = srcX[i];
+		src.w = srcW[i];
+		dst.x = dstX[i];
+		dst.w = dstW[i];
+		for (int j = 0; j < 3; j++)
+		{
+			src.y = srcY[j];
+			src.h = srcH[j];
+			dst.y = dstY[j];
+			dst.h = dstH[j];
+			res = SDL_RenderCopy(renderer, t, &src, &dst);
+			if (res != 0)
+			{
+				return res;
+			}
+		}
+	}
+	return 0;
 }
 
 int main(int argc, char *argv[])
@@ -32,7 +64,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Load image from file
-	s = IMG_Load("ui.png");
+	s = IMG_Load(IMG_FILE);
 	if (s == NULL)
 	{
 		printf("Failed to load image from file\n");
@@ -104,7 +136,7 @@ int main(int argc, char *argv[])
 		{
 			SDL_RenderSetLogicalSize(renderer, width, height);
 			// Blit the texture to screen
-			if (render(renderer, s, t, 0, 0, 0, 0, 0, 0, width, height) != 0)
+			if (render(renderer, s, t, 0, 0, TOP, BOTTOM, LEFT, RIGHT, width, height) != 0)
 			{
 				printf("Failed to blit surface: %s\n", SDL_GetError());
 				goto bail;
