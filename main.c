@@ -19,8 +19,8 @@ int render(
 	const int srcY[] = {0, TOP, s->h - BOTTOM};
 	const int srcW[] = {LEFT, s->w - RIGHT - LEFT, RIGHT};
 	const int srcH[] = {TOP, s->h - BOTTOM - TOP, BOTTOM};
-	const int dstX[] = {x, x + LEFT, x + w - RIGHT};
-	const int dstY[] = {y, y + TOP, y + h - BOTTOM};
+	const int dstX[] = {x, x + LEFT, x + w - RIGHT, x + w};
+	const int dstY[] = {y, y + TOP, y + h - BOTTOM, y + h};
 	const int dstW[] = {LEFT, w - RIGHT - LEFT, RIGHT};
 	const int dstH[] = {TOP, h - BOTTOM - TOP, BOTTOM};
 	SDL_Rect src;
@@ -38,7 +38,7 @@ int render(
 		{
 			dst.w = dstW[i];
 		}
-		for (dst.x = dstX[i]; dst.x < (i < 2 ? dstX[i + 1] : x + w); dst.x += dst.w)
+		for (dst.x = dstX[i]; dst.x < dstX[i + 1]; dst.x += dst.w)
 		{
 			for (int j = 0; j < 3; j++)
 			{
@@ -52,7 +52,7 @@ int render(
 				{
 					dst.h = dstH[j];
 				}
-				for (dst.y = dstY[j]; dst.y < (j < 2 ? dstY[j + 1] : y + h); dst.y += dst.h)
+				for (dst.y = dstY[j]; dst.y < dstY[j + 1]; dst.y += dst.h)
 				{
 					res = SDL_RenderCopy(renderer, t, &src, &dst);
 					if (res != 0)
