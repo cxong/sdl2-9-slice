@@ -25,36 +25,21 @@ int render(
 	const int dstH[] = {top, h - bottom - top, bottom};
 	SDL_Rect src;
 	SDL_Rect dst;
-	int res;
 	for (int i = 0; i < 3; i++)
 	{
 		src.x = srcX[i];
 		src.w = srcW[i];
-		if (repeat)
-		{
-			dst.w = srcW[i];
-		}
-		else
-		{
-			dst.w = dstW[i];
-		}
+		dst.w = repeat ? srcW[i] : dstW[i];
 		for (dst.x = dstX[i]; dst.x < dstX[i + 1]; dst.x += dst.w)
 		{
 			for (int j = 0; j < 3; j++)
 			{
 				src.y = srcY[j];
 				src.h = srcH[j];
-				if (repeat)
-				{
-					dst.h = srcH[j];
-				}
-				else
-				{
-					dst.h = dstH[j];
-				}
+				dst.h = repeat ? srcH[j] : dstH[j];
 				for (dst.y = dstY[j]; dst.y < dstY[j + 1]; dst.y += dst.h)
 				{
-					res = SDL_RenderCopy(renderer, t, &src, &dst);
+					const int res = SDL_RenderCopy(renderer, t, &src, &dst);
 					if (res != 0)
 					{
 						return res;
