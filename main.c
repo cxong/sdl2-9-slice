@@ -12,14 +12,15 @@
 
 int render(
 	SDL_Renderer *renderer, SDL_Surface *s, SDL_Texture *t,
-	int x, int y, int top, int bottom, int left, int right, int w, int h)
+	int x, int y, int top, int bottom, int left, int right, int w, int h,
+	bool repeat)
 {
 	const int srcX[] = {0, LEFT, s->w - RIGHT};
 	const int srcY[] = {0, TOP, s->h - BOTTOM};
 	const int srcW[] = {LEFT, s->w - RIGHT - LEFT, RIGHT};
 	const int srcH[] = {TOP, s->h - BOTTOM - TOP, BOTTOM};
-	const int dstX[] = {x, x + LEFT, w - RIGHT};
-	const int dstY[] = {y, y + TOP, h - BOTTOM};
+	const int dstX[] = {x, x + LEFT, x + w - RIGHT};
+	const int dstY[] = {y, y + TOP, y + h - BOTTOM};
 	const int dstW[] = {LEFT, w - RIGHT - LEFT, RIGHT};
 	const int dstH[] = {TOP, h - BOTTOM - TOP, BOTTOM};
 	SDL_Rect src;
@@ -29,18 +30,36 @@ int render(
 	{
 		src.x = srcX[i];
 		src.w = srcW[i];
-		dst.x = dstX[i];
-		dst.w = dstW[i];
-		for (int j = 0; j < 3; j++)
+		if (repeat)
 		{
-			src.y = srcY[j];
-			src.h = srcH[j];
-			dst.y = dstY[j];
-			dst.h = dstH[j];
-			res = SDL_RenderCopy(renderer, t, &src, &dst);
-			if (res != 0)
+			dst.w = srcW[i];
+		}
+		else
+		{
+			dst.w = dstW[i];
+		}
+		for (dst.x = dstX[i]; dst.x < (i < 2 ? dstX[i + 1] : x + w); dst.x += dst.w)
+		{
+			for (int j = 0; j < 3; j++)
 			{
-				return res;
+				src.y = srcY[j];
+				src.h = srcH[j];
+				if (repeat)
+				{
+					dst.h = srcH[j];
+				}
+				else
+				{
+					dst.h = dstH[j];
+				}
+				for (dst.y = dstY[j]; dst.y < (j < 2 ? dstY[j + 1] : y + h); dst.y += dst.h)
+				{
+					res = SDL_RenderCopy(renderer, t, &src, &dst);
+					if (res != 0)
+					{
+						return res;
+					}
+				}
 			}
 		}
 	}
@@ -134,9 +153,15 @@ int main(int argc, char *argv[])
 		}
 		if (!rendered)
 		{
+			SDL_RenderClear(renderer);
 			SDL_RenderSetLogicalSize(renderer, width, height);
-			// Blit the texture to screen
-			if (render(renderer, s, t, 0, 0, TOP, BOTTOM, LEFT, RIGHT, width, height) != 0)
+			// Blit two textures to screen: stretch and wrapped
+			if (render(renderer, s, t, 0, 0, TOP, BOTTOM, LEFT, RIGHT, width / 2, height, false) != 0)
+			{
+				printf("Failed to blit surface: %s\n", SDL_GetError());
+				goto bail;
+			}
+			if (render(renderer, s, t, width / 2, 0, TOP, BOTTOM, LEFT, RIGHT, width / 2, height, true) != 0)
 			{
 				printf("Failed to blit surface: %s\n", SDL_GetError());
 				goto bail;
