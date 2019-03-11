@@ -15,14 +15,14 @@ int render(
 	int x, int y, int top, int bottom, int left, int right, int w, int h,
 	bool repeat)
 {
-	const int srcX[] = {0, LEFT, s->w - RIGHT};
-	const int srcY[] = {0, TOP, s->h - BOTTOM};
-	const int srcW[] = {LEFT, s->w - RIGHT - LEFT, RIGHT};
-	const int srcH[] = {TOP, s->h - BOTTOM - TOP, BOTTOM};
-	const int dstX[] = {x, x + LEFT, x + w - RIGHT, x + w};
-	const int dstY[] = {y, y + TOP, y + h - BOTTOM, y + h};
-	const int dstW[] = {LEFT, w - RIGHT - LEFT, RIGHT};
-	const int dstH[] = {TOP, h - BOTTOM - TOP, BOTTOM};
+	const int srcX[] = {0, left, s->w - right};
+	const int srcY[] = {0, top, s->h - bottom};
+	const int srcW[] = {left, s->w - right - left, right};
+	const int srcH[] = {top, s->h - bottom - top, bottom};
+	const int dstX[] = {x, x + left, x + w - right, x + w};
+	const int dstY[] = {y, y + top, y + h - bottom, y + h};
+	const int dstW[] = {left, w - right - left, right};
+	const int dstH[] = {top, h - bottom - top, bottom};
 	SDL_Rect src;
 	SDL_Rect dst;
 	int res;
