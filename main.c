@@ -32,6 +32,10 @@ int render(
 		dst.w = repeat ? srcW[i] : dstW[i];
 		for (dst.x = dstX[i]; dst.x < dstX[i + 1]; dst.x += dst.w)
 		{
+			if (dst.x + dst.w > dstX[i + 1])
+			{
+				src.w = dst.w = dstX[i + 1] - dst.x;
+			}
 			for (int j = 0; j < 3; j++)
 			{
 				src.y = srcY[j];
@@ -39,6 +43,10 @@ int render(
 				dst.h = repeat ? srcH[j] : dstH[j];
 				for (dst.y = dstY[j]; dst.y < dstY[j + 1]; dst.y += dst.h)
 				{
+					if (dst.y + dst.h > dstY[j + 1])
+					{
+						src.h = dst.h = dstY[j + 1] - dst.y;
+					}
 					const int res = SDL_RenderCopy(renderer, t, &src, &dst);
 					if (res != 0)
 					{
